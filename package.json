@@ -10,7 +10,8 @@
     "build": "tsc",
     "prepublishOnly": "npm run build",
     "format": "prettier --write .",
-    "lint": "eslint \"**/*.{js,ts,tsx}\" --fix"
+    "lint": "eslint \"**/*.{js,ts,tsx}\" --fix",
+    "index-docs": "tsx scripts/indexDocs.ts"
   },
   "repository": {
     "type": "git",
@@ -42,6 +43,8 @@
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.10.2",
     "@salesforce/core": "^8.9.1",
+    "@lancedb/lancedb": "^0.19.1",
+    "@xenova/transformers": "^2.17.2",
     "dotenv": "^16.5.0",
     "globby": "^14.1.0",
     "zod": "^3.24.3"

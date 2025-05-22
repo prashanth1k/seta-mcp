@@ -50,11 +50,11 @@ const server = new McpServer({
 // Register tools
 server.tool(
   "resolve-library-id",
-  `Resolves library, framework, or technology names (like Apex, LWC, Visualforce, SOQL, DML, Triggers, Batch Apex, Asynchronous Apex, Salesforce APIs) into a unique local documentation ID. Use this tool first when you need up-to-date documentation, code examples, or best practices for Salesforce development tasks mentioned in the prompt. Provides a list of potential matches with descriptions and indicators like code snippet count or popularity.`,
+  `Semantically searches and resolves library, framework, or technology names (like Apex, LWC, Visualforce, SOQL, DML, Triggers, Batch Apex, Asynchronous Apex, Salesforce APIs) by analyzing their documentation content to find the most relevant local documentation ID. Use this tool first when you need up-to-date documentation, code examples, or best practices. Provides a list of potential matches with descriptions and relevance scores.`,
   {
     libraryName: z
       .string()
-      .describe("Library name to search for in local documentation."),
+      .describe("Natural language query or search terms to find relevant libraries based on their documentation content."),
   },
   async ({ libraryName }) => {
     const searchResponse = await searchLocalLibraries(libraryName);
@@ -110,7 +110,7 @@ ${resultsText}`,
 
 server.tool(
   "get-library-docs",
-  "Fetches specific, up-to-date documentation, code examples, API details, and best practices for a given local library ID (obtained from 'resolve-library-id'). Use this tool *after* identifying the correct library ID to get detailed context for tasks like writing Apex classes, LWC components, SOQL queries, understanding governor limits, implementing triggers, or using specific Salesforce features. Can optionally focus on a specific 'topic' within the documentation (e.g., 'DML Operations', 'Batch Apex Limits').",
+  "Retrieves relevant documentation segments from a specified library based on a semantic query. Use the 'topic' parameter to provide your natural language query. If 'topic' is empty, attempts to return the library's default documentation.",
   {
     localLibraryID: z
       .string()
@@ -121,14 +121,9 @@ server.tool(
       .string()
       .optional()
       .describe(
-        "Topic to focus documentation on (maps to a file in the library's manifest.json)."
+        "Semantic query string to search for specific information within the library's documentation. Results will be the most relevant text segments."
       ),
-    keywords: z // NEW FIELD
-      .string()
-      .optional()
-      .describe(
-        "Keywords to search for within the document content (e.g., 'aura iteration'). If provided, 'topic' might be ignored. Results will be snippets containing these keywords."
-      ),
+    // 'keywords' parameter is REMOVED
     tokens: z
       .preprocess(
         (val) => (typeof val === "string" ? Number(val) : val),
@@ -140,13 +135,12 @@ server.tool(
         `Maximum number of characters (approx. tokens) of documentation to retrieve (default: ${DEFAULT_MAX_TOKENS}). Lower values provide less context.`
       ),
   },
-  async ({ localLibraryID, tokens = DEFAULT_MAX_TOKENS, topic = "", keywords }) => { // Added 'keywords' here
+  async ({ localLibraryID, tokens = DEFAULT_MAX_TOKENS, topic = "" }) => { // 'keywords' removed
     const documentationText = await fetchLocalLibraryDocumentation(
       localLibraryID,
       {
         tokens,
-        topic,
-        keywords, // Pass 'keywords' here
+        topic, // 'keywords' removed
       }
     );
 
