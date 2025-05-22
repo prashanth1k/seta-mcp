@@ -123,6 +123,12 @@ server.tool(
       .describe(
         "Topic to focus documentation on (maps to a file in the library's manifest.json)."
       ),
+    keywords: z // NEW FIELD
+      .string()
+      .optional()
+      .describe(
+        "Keywords to search for within the document content (e.g., 'aura iteration'). If provided, 'topic' might be ignored. Results will be snippets containing these keywords."
+      ),
     tokens: z
       .preprocess(
         (val) => (typeof val === "string" ? Number(val) : val),
@@ -134,12 +140,13 @@ server.tool(
         `Maximum number of characters (approx. tokens) of documentation to retrieve (default: ${DEFAULT_MAX_TOKENS}). Lower values provide less context.`
       ),
   },
-  async ({ localLibraryID, tokens = DEFAULT_MAX_TOKENS, topic = "" }) => {
+  async ({ localLibraryID, tokens = DEFAULT_MAX_TOKENS, topic = "", keywords }) => { // Added 'keywords' here
     const documentationText = await fetchLocalLibraryDocumentation(
       localLibraryID,
       {
         tokens,
         topic,
+        keywords, // Pass 'keywords' here
       }
     );
 
